@@ -1,0 +1,331 @@
+\documentclass{article}
+
+\usepackage{graphicx} % Required for inserting images
+\usepackage{indentfirst} % Required for custom spacing
+\usepackage{multirow} % Required for tables
+\usepackage{listings}
+\usepackage{hyperref} % For including URLs within citations
+\usepackage{amsmath} % Required for text in math mode
+\usepackage{setspace} % Required for single spaced
+\usepackage[vmargin = 25.4mm, hmargin = 25.4mm]{geometry} % For making wider margins
+
+\singlespacing
+
+\title{Stats 111 HW 5}
+\author{Colin Bolek}
+\date{March 2024}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+\setlength{\parindent}{0pt}Attendance has often been posited as a key contributor to student success, with high attendance claimed to have a strong correlation with high performance among students across levels of K-12 education. Consequently, levels of absenteeism and any factors correlated with higher rates of absenteeism are of great interest. To educators, rates of absenteeism and their prediction can facilitate the more efficient implementation of targeted and effective interventions. To government officials, rates of absenteeism can be seen as forerunning indicators of success of a system that has historically been seen as a key foundation of a health body politic (Tomlinson, 1986). To students and their parents, absenteeism may be interpreted as a dire signal for the individual student and family's long-term financial prospects; in the country from which we take our data, Portugal, the completion of upper secondary education (an American equivalent of which being grades 9-12 in high school) is associated with a 19.7\% increase in employment rate and a 31.5\% decrease in rates of earning below half of the national median for individuals aged 25-64 (OECD, 2023). While authors like Liu et al. have established a statistically significant negative correlation between chronic absenteeism (defined as ten or more absences in a year) and on-time graduation, I turn my attention in this analysis to the various factors which themselves influence rates of absenteeism (Liu et al, 2021). Using data collected by Cortez and Silva on students from two schools in Portugal, I aim here to assess the degree to which a student's distance from their school affects their rates of absenteeism while also shedding some light on the extent to which absenteeism is a predictor of a student's desire to pursue post-secondary education (Cortez and Silva, 2008). Our specific research questions are the following: 
+
+
+\begin{enumerate}
+    \item Is a student's distance from their school associated with increased absences?
+    \begin{enumerate}
+        \item Does the relationship between distance from school and absences vary by sex?
+    \end{enumerate}
+    \item Do we expect a student with no absences to indicate a desire to pursue higher education?
+    \begin{enumerate}
+        \item Do we expect a 17 year old female student with no absences who had both parents attend higher education to indicate a desire to pursue higher education?
+    \end{enumerate}
+\end{enumerate}
+
+\section{Question 1}
+\subsection{Methods}
+Of the three links we reviewed in class (the identity link, the log link, and the logit link), the logit link may be immediately ruled for this question as the variable of interest — a student's number of absences — is not a probability $p \in [0,1]$ but rather an integer count specific to each student. Similarly, as our response variable is discrete, I rule out the identity link as a sound link function to use in the construction of an appropriate general linear model (GLM). Our GLM will therefore follow a log link with a Poisson random component and take the following general form:
+
+\begin{equation}
+g(\lambda) = \log(\lambda) = \beta_0 + \beta_1X_1  + ... + \beta_pX_p  
+\end{equation}
+
+As the sampling units taken from Cortez and Silva were observed for the same length of time (one Portuguese school year), I here decline to use an offset term and proceed from the position that estimating the rate parameter will be sufficient to make germane inference on the given research question. Furthermore, and unless specified otherwise, I use the equivalence in observation time across all sampling units to use the rate parameter $\lambda$ interchangeably with the total count of absences for each observed student (in other words, I am setting the exposure period to be one Portuguese academic year). 
+\newline\hspace{15pt}In determining statistical significance for just the main part of Question 1, I will begin by constructing a model with just an intercept and a coefficient corresponding to the \texttt{traveltime} variable. If an F test shows this variable to be unnecessary on its own, I will proceed by constructing a full model (one with all the variables in the data set assigned its own coefficient) and using R's in-built step() function to construct a model forward and step-wise, minimizing the model's Akaike Information Criterion (AIC) and thereby determining what is the efficient choice of model with no interaction parameters. From the information collected from these procedures, I will make a conclusion on the association between student distance and student absences. 
+\newline\hspace{15pt} In determining whether student sex is an effect modifier on the relationship between school distance and absenteeism, I will construct a rather limited GLM which has only terms: \texttt{traveltime} and an interaction term between \texttt{traveltime} and \texttt{sex}. This model will have the form
+\begin{equation}
+g(\lambda) = \log(\lambda) = \beta_0 + \beta_1[\texttt{traveltime}] + \beta_2[\texttt{sex}] + \beta_3[\texttt{traveltime*sex}]
+\end{equation}
+and will have each coefficient tested for significance at an $\alpha = 0.05$ significance level. While this is not a robust test, testing for confounding variables in the Poisson regression is not possible through such tests as the Mantel-Haenszel or Breslow-Day, both of which are exclusive to the logistic setting, nor through a t-test of mean difference, which cannot account for more than one explanatory variable. Consequently, I deem the question of robustly testing for sex being a confounder or not to be beyond the scope of this class. 
+\subsection{Results}
+The results for the simple GLM which includes only the \texttt{traveltime} variable are shown here:
+
+\begin{center}
+    \begin{tabular}{c c c c}
+        \hline
+        Variable & Estimate & Standard Error & P-Value \\
+        \hline
+        Intercept & 1.78 & 0.0488 & $\approx$ 0 \\ 
+        \texttt{traveltime} & -0.0264 & 0.0309 & 0.389 \\
+        \hline
+    \end{tabular}
+\end{center}
+
+Given $H_0: \beta_0 = 0 \text{, } H_A: \beta_0 \neq 0 \text{, and } \alpha = 0.05$, I here fail to reject the null hypothesis and conclude that \texttt{traveltime} is, on its own, not associated with a student's number of absences. In order to bolster this conclusion, I use \texttt{R}'s in-built step() function to yield the following information:
+\begin{center}
+    \begin{tabular}{c c}
+        \hline
+        Model & AIC\\
+        \hline
+        Model with Variables in Table Below & 3282.9\\
+        \hline
+    \end{tabular}
+
+    \begin{tabular}{c c c c}
+        \hline
+        \multicolumn{4}{c}{Model: Full (all variables included in model)}\\
+        \hline
+        Variable & Estimate & SE & P-Value\\
+        \hline
+        Intercept & -2.76 & 0.412 & $1.90\times10^{-11}$ \\
+        \texttt{reason[reason = home]} & 0.473 & 0.058 & $4.20\times10^{-16}$ \\
+        \texttt{reason[reason = other]} & 0.188 & 0.087 & 0.031 \\
+        \texttt{reason[reason = reputation]} & 0.412 & 0.062 & $2.57\times10^{-11}$ \\
+        \texttt{age} & 0.230 & 0.020 & $\approx 0$ \\
+        \texttt{school} & -0.721 & 0.087 & $\approx 0$ \\
+        \texttt{Walc} & 0.186 & 0.021 & $\approx 0$ \\
+        \texttt{Pstatus} & -0.293 & 0.062 & $2.58\times10^{-6}$ \\
+        \texttt{romantic} & 0.276 & 0.47 & $3.07\times10^{-9}$ \\
+        \texttt{guardian[guardian = mother]} & 0.279 & 0.062 & $6.61\times10^{-6}$\\
+        \texttt{guardian[guardian = other]} & 0.574 & 0.089 & $1.15\times10^{-10}$ \\
+        \texttt{internet[internet = yes]} & 0.512 & 0.072 & $1.48\times10^{-12}$\\
+        \texttt{sex} & -0.416 & 0.052 & $1.84\times10^{-15}$ \\
+        \texttt{studytime} & -0.234 & 0.032 & $1.20\times10^{-13}$ \\
+        \texttt{G3} & 0.172 & 0.017 & $\approx 0$ \\
+        \texttt{G2} & -0.171 & 0.018 & $\approx 0$ \\
+        \texttt{address[address = U]} & -0.253 & 0.056 & $6.48\times10^{-6}$ \\
+        \texttt{Mjob[Mjob = health]} & 0.219 & 0.029 & $8.79\times10^{-14}$ \\
+        \texttt{Mjob[Mjob = other]} & 0.068 & 0.077 & 0.382 \\
+        \texttt{Mjob[Mjob = services]} & -0.125 & 0.084 & 0.138 \\
+        \texttt{Mjob[Mjob = teacher]} & -0.291 & 0.108 & 0.007 \\
+        \texttt{famrel} & -0.105 & 0.025 & $2.67\times10^{-5}$ \\
+        \texttt{schoolsup} & 0.230 & 0.067 & $6.3\times10^{-4}$ \\
+        \texttt{Fjob[Fjob = health]} & 0.287 & 0.154 & 0.062 \\
+        \texttt{Fjob[Fjob = other]} & 0.144 & 0.114 & 0.207 \\
+        \texttt{Fjob[Fjob = services]} & 0.230 & 0.118 & 0.051 \\
+        \texttt{Fjob[Fjob = teacher]} & -0.038 & 0.142 & 0.788 \\
+        \texttt{goout} & -0.055 & 0.023 & 0.018 \\
+        \texttt{nursery} & 0.163 & 0.058 & 0.0047 \\
+        \texttt{paid} & -0.121 & 0.048 & 0.011 \\
+        \texttt{health} & 0.038 & 0.017 & 0.023 \\
+        \texttt{famsize} & 0.089 & 0.049 & 0.071 \\
+        \texttt{freetime} & -0.040 & 0.024 & 0.093 \\
+        \texttt{activities} & 0.073 & 0.046 & 0.110 \\
+        \hline
+    \end{tabular}
+\end{center}
+
+That is, the Log-Link Poisson Model which minimizes AIC \textit{does not} include a student's distance from their school, so I conclude there is no significant association between a student's distance from school and their number of absences.
+\newline\hspace{15pt} As for the second part of Question 1, I constructed the simple model given in equation (2); the output of this model is given below: 
+
+\begin{center}
+    \begin{tabular}{c c c c}
+    \hline
+    Variable & Estimate & Standard Error & P-Value\\
+    \hline
+    Intercept & 1.993 & 0.068 & $\approx 0$\\
+    \texttt{traveltime} & -0.119 & 0.046 & 0.0092\\
+    \texttt{sex} & -0.464 & 0.099 & $2.5\times10^{-6}$\\
+    \texttt{traveltime*sex} & 0.192 & 0.062 & 0.0019\\
+    \hline
+    \end{tabular}
+\end{center}
+
+In this rather sparse model and given $H_0: \beta_3 = 0 \text{, } H_A: \beta_3\neq0\text{, and } \alpha = 0.05$, I therefore reject the null and conclude that that the relationship between a student's distance from school and their absences does vary by sex, suggesting a population-level relationship between being a male and having one's distance from their school affect their number of absences.
+ 
+\section{Question 2}
+\subsection{Methods}
+In our data set, the desire to pursue higher education is modeled as a binary variable with possible responses ``Yes'' and ``No.'' Consequently, a logistic GLM of the following form will be used to model this data: 
+
+\begin{equation}
+g(\mu) = \log\left(\frac{\mu}{1-\mu}\right) = \beta_0 + \beta_1X_1 + ... + \beta_pX_p
+\end{equation}
+
+Like in the case of the first primary question addressed above, I will here employ two tests. First, I will employ a t-test to determine if the group mean of wanting to go to college (``Yes'' being set to 1 and ``No'' being set to 0) for individuals with no absences is greater than 0.5. I here take $\mu > 0.5$ to indicate ``a desire to pursue higher education.'' Then, I will conduct a Chi-Squared test in order to test if this mean is dependent on having no absences; in other words, I will be testing if having absences is at all indicative of wanting to go to college. 
+
+\hspace{15pt} In calculating an answer to the second question, I will simply construct a GLM of the form
+
+\begin{equation}
+g(\mu) = \log\left(\frac{\mu}{1-\mu}\right) = \beta_0 + \beta_1I[\texttt{Male}] + \beta_2[\texttt{Age}] + \beta_3[\texttt{absences}] + \beta_4[\texttt{Medu}] + \beta_5[\texttt{Fedu}]
+\end{equation}
+
+and construct a 95\% CI for $\mu$. If this confidence interval is entirely greater than 0.5 at the set
+\[
+\texttt{Male}=0,\quad \texttt{Age}=17,\quad \texttt{Absences}=0,\quad \texttt{Medu}=4,\quad \texttt{Fedu}=4.
+\]
+
+we will have enough evidence to conclude in the affirmative for Question 2(a). 
+\subsection{Results}
+The results of the one-sided t-test for whether the population mean of those with no absences who wish to attend college is greater than 0.5 is as follows: 
+
+\begin{center}
+    \begin{tabular}{c c c c}
+        \hline
+        Sample Mean & T-Value & 95\% CI & P-Value \\
+        \hline
+        0.9304 & 18.064 & (0.890, $\infty$) & $\approx$ 0 \\
+        \hline
+        \end{tabular}
+\end{center}
+
+Given $H_0: \mu\leq0.5 \text{, }H_A: \mu>0.5\text{, and } \alpha = 0.05$, the immensely small p-value leads me to reject the null hypothesis and conclude in the affirmative for Question 2: we do expect a student with no absences to indicate a desire to pursue higher education. However, given the following 2$\times$2 contingency table which describes the desire to pursue higher education among the all the surveyed students categorized by whether they had absences or not,
+
+\begin{center}
+    \begin{tabular}{|c|c|c|}
+    \hline
+         & Desire to Pursue Education & No Desire to Pursue Higher Education \\
+    \hline
+         No Absences & 107 & 8\\
+    \hline
+         At Least One Absence & 268 & 12\\
+    \hline
+    \end{tabular}
+\end{center}
+
+a chi-squared test of independence on this data given 
+
+\begin{center}
+$H_0$: Desire to Pursue Higher Education and Number of Absences are Independent
+\newline\-\hspace{-45pt}$H_A$: Desire to Pursue Higher Education and Number of Absences are Dependent
+\end{center}
+
+returns a p-value of 0.397, leading to me to fail to reject the null hypothesis at $\alpha = 0.05$. The subtle difference between the use of the t-test previously and the chi-squared test here yield an important conclusion: while we do expect a student with no absences to report a desire to pursue higher education, we do not expect them to have such a desire at any higher rate than a student with one or more absences.
+\newline\hspace{15pt}Finally, I turn to the question of whether a 17 year old student with no absences and with two parents who attended higher education should be expected to express a desire to pursue higher education. For this evaluation, the model given in equation (4) was constructed and the 95\% confidence intervals for its predictors obtained. While not all coefficients in this model are significant at $\alpha = 0.05$, the input of the values specified in set (5) for both the low and high end of the 95\% confidence interval return an estimated probability interval of (0.987, $\approx$ 1). Consequently, I argue that there is significant evidence to conclude that a student with the specified qualities will indicate a desire to pursue higher education.
+
+\section{Discussion}
+In total, the above results demonstrate that a student's distance from their home to their school is not a statistically significant factor in a student's number of absences per year. Statistically, my conclusions are limited by the lack of a statistical method within the scope of this class fit to test the independence of a categorical and a continuous variable in the absence of a potential confounder; while a Mantel-Haenszel test was initially considered, the lack of a potential confounder stated in Question 1 ruled an MH test out as a possibility. Nonetheless, I find the obtained result to be logically sound, particularly in developed countries where automobiles or robust systems of public transportation exist to remove major barriers a student can face in attending school. On the contrary, however, I would find these results to be limited to such a developed context as overly large distances between school and the home could be prohibitive for students in which no such systems of transportation exist. However, in the context(s) for which these results are applicable, I believe they suggest a need for research into the influence of social factors like poverty and family dynamics (e.g. how many younger siblings a student has) on a student's level of absenteeism and their attendant level of engagement with their education. Again, while these results are limited to developed nations, I believe such research could be impactful in addressing the detrimental effect posed by absenteeism on individual accomplishment, long-term individual stability, and society-wide growth goals attainment.
+\newline\hspace{15pt}As for the second set of questions regarding students' desire to pursue higher education, the results obtained here suggest a strong overall desire among the surveyed population to attend college, but suggest very little about what is causing — or even correlated with — such desires. I find the chi-squared test of independence regarding Question 2 to be of particular importance in this case as it suggested that absenteeism and a desire to pursue higher education were, in fact, independent. For this particular data set, I believe the homogeneity of the survey population was particularly damning. In taking data from only two schools in the same predominantly agricultural region of Alentejo, Portugal, I believe the data to be an unrepresentative sample of the attitudes of adolescents in secondary school throughout Portugal, let alone in other countries, in this regard (Costa et al., 2011). For this reason, I believe future research is needed into not just what inspires a desire to go to college, but what adolescent behaviors, activities, or other factors influence success in college for those who choose to attend.
+
+\section{Appendix 1: R Code}
+\begin{verbatim}
+#load necessary libraries
+install.packages("stringr")
+library(stringr) # for string manipulation within dataset
+#-------------------------------------------------------------------------------
+# load given data set into R
+student.mat = read.csv("/Users/bolekcolin13/Desktop/Coding Portfolio/student-mat.csv", sep = ";")
+
+# Create bare GLM with only traveltime term and yield p-value to evaluate
+# efficiency of a minimal model
+model.bare = glm(absences~traveltime, family = poisson, data = student.mat)
+summary(model.bare)
+
+# traveltime coefficient only has p = 0.389, so proceed to step() method in 
+# order to rule out traveltime as a significant predictor
+model.full = glm(absences ~ .-absences, family = poisson, data = student.mat)
+summary(model.full)
+forward = step(glm(absences ~ 1, family = poisson, data = student.mat), scope = 
+                 list(upper=model.full), direction = "forward")
+model.max = glm(absences~reason+age+school+Walc+Pstatus+romantic+guardian+
+                  internet+sex+studytime+G3+G2+address+Medu+Mjob+famrel+ 
+                  schoolsup+Fjob+goout+nursery+paid+health+famsize+freetime+
+                  activities, family = poisson, data =student.mat)
+summary(model.max)
+
+# Proceed to interaction between sex and traveltime on absences. Construct the
+# model given by g(\lambda) = b0 + b1(traveltime) + b2(sex) +
+# b3(traveltime * sex)
+model.interaction = glm(absences~traveltime + sex + traveltime*sex, family = poisson,
+                        data = student.mat)
+
+# yield significance values to evaluate above model
+summary(model.interaction)
+
+#-------------------------------------------------------------------------------
+# Now for question 2. We are in this question modeling a binary response and
+# will therefore be using a t test, a chi squared test, and a logistic GLM.
+
+# Start with the t test to determine if a significant relationship exists
+# between absences and desire to attend college.
+student.mat.higher = student.mat[student.mat$absences == "0",]$higher
+student.mat.higher = ifelse(student.mat.higher == "yes", 1, 0)
+t.test(student.mat.higher, mu = 0.5, alternative = "g")
+
+# Now for the Chi Squared Test, to evaluate whether absence level is 
+# (in)dependent of desire to attend college.
+no.absences.high = as.numeric(sum(str_count(student.mat[student.mat$absences == 
+                                                          "0",]$higher, "yes")))
+no.absences.nohigh = as.numeric(sum(str_count(student.mat[student.mat$absences==
+                                                          "0",]$higher, "no")))
+yes.absences = 395 - (no.absences.high + no.absences.nohigh)
+yes.absences.high = (as.numeric(sum(str_count(student.mat$higher, "yes")))) -
+  no.absences.high
+yes.absences.nohigh = (as.numeric(sum(str_count(student.mat$higher, "no")))) -
+  no.absences.nohigh
+high.vector = c(no.absences.high, yes.absences.high)
+nohigh.vector = c(no.absences.nohigh, yes.absences.nohigh)
+high.frame = data.frame(high.vector, nohigh.vector)
+
+# rename column and row names for convenience
+colnames(high.frame) = c("Yes Higher Ed", "No Higher Ed")
+rownames(high.frame) = c("No Absences", "Yes Absences")
+
+# conduct Chi Sq. Test
+chisq.test(high.frame)
+
+# proceed to prediction for 17 y.o. female student with no absences and with two
+# parents who attended college
+# convert "higher" and "sex" variables in student.mat from strings of "yes" or
+# "no" to numerics with "yes" = 1, "no" = 0 and "M" = 1, "F" = 0, respectively,
+# for ease of integration of information with necessary programs
+student.mat$higher = ifelse(student.mat$higher == "yes", 1, 0)
+student.mat$sex = ifelse(student.mat$sex == "M", 1, 0)
+
+# create the glm
+predict.model = glm(higher~sex+age+absences+Medu+Fedu, family = binomial, data =
+                      student.mat)
+# evaluate model efficiency via its summary
+summary(predict.model)
+
+# In order to evaluate the desire a student with the stated characteristics to 
+# pursue higher education, we would like a 95% CI of their probability of 
+# desiring so. We therefore need 95% CIs for all predictors in the above GLM:
+se = summary(predict.model)$coefficients[,"Std. Error"]
+predictor = summary(predict.model)$coefficients[,"Estimate"]
+ci95.lo = c()
+ci95.hi = c()
+for (i in 1:length(predictor)){
+  lo_est = exp(predictor[i] - qnorm(0.975)*se[i])
+  ci95.lo = c(ci95.lo, lo_est)
+}
+
+for (i in 1:length(predictor)){
+  hi_est = exp(predictor[i] + qnorm(0.975)*se[i])
+  ci95.hi = c(ci95.hi, hi_est)
+}
+
+# code a function which converts the vector of odds ratio confidence intervals 
+# to an interval of probabilities using the above-obtained CIs
+probinterval = function(model, vec){
+  low.output = sum(vec*ci95.lo)
+  low.prob = (low.output/(1+low.output))
+  hi.output = sum(vec*ci95.hi)
+  hi.prob = (hi.output/(1+hi.output))
+  cat(paste0("(",low.prob, ", ", hi.prob,")"))
+}
+
+# declare vector with values specified in question 2(a), including a 1
+# for the intercept
+x = c(1, 0, 17, 0, 4, 4)
+# pass the vector and predict.model to probinterval() to yield the desired 
+# interval
+probinterval(predict.model,x)
+\end{verbatim}
+
+\section{Appendix 2: Works Cited}
+\setlength{\parindent}{15pt}
+Conniff, Kyle (2017). Data Analysis 2017. [PhD Qualifying Exam, University of California, Irvine].
+
+Cortez, P. \& Silva, A. (2008). Using Data Mining to Predict Secondary School Student Performance. \url{http://repositorium.sdum.uminho.pt/bitstream/1822/8024/1/student.pdf}
+
+Costa, M. A. M., Moors, E. J., \& Fraser, E. D. G. (2011). Socioeconomics, Policy, or Climate Change: What is Driving Vulnerability in Southern Portugal? Ecology and Society, 16(1). \url{http://www.jstor.org/stable/26268843}
+
+Liu, J. et al. (2021). The short- and long-run impacts of secondary school absences. \url{https://doi.org/10.1016/j.jpubeco.2021.104441}
+
+OECD Education GPS (2023). Portugal: Overview of the education system. \url{https://gpseducation.oecd.org/CountryProfile?primaryCountry=PRT}
+
+Tomlinson, J. (1986). Public Education, Public Good. Oxford Review of Education, 12(3), 211–222. \url{http://www.jstor.org/stable/1050027}
+
+
+\end{document}
