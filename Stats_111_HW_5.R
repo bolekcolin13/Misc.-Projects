@@ -1,9 +1,11 @@
 #load necessary libraries
 install.packages("stringr")
+install.packages("ciTools")
 library(stringr) # for string manipulation within dataset
+library(ciTools) # for GLM confidence interval calculations
 #-------------------------------------------------------------------------------
 # load given data set into R
-student.mat = read.csv("pathname{student-mat.csv", sep = ";")
+student.mat = read.csv("/Users/bolekcolin13/Desktop/Coding Portfolio/student-mat.csv", sep = ";")
 
 # Create bare GLM with only traveltime term and yield p-value to evaluate
 # efficiency of a minimal model
@@ -79,34 +81,8 @@ summary(predict.model)
 
 # In order to evaluate the desire a student with the stated characteristics to 
 # pursue higher education, we would like a 95% CI of their probability of 
-# desiring so. We therefore need 95% CIs for all predictors in the above GLM:
-se = summary(predict.model)$coefficients[,"Std. Error"]
-predictor = summary(predict.model)$coefficients[,"Estimate"]
-ci95.lo = c()
-ci95.hi = c()
-for (i in 1:length(predictor)){
-  lo_est = exp(predictor[i] - qnorm(0.975)*se[i])
-  ci95.lo = c(ci95.lo, lo_est)
-}
-
-for (i in 1:length(predictor)){
-  hi_est = exp(predictor[i] + qnorm(0.975)*se[i])
-  ci95.hi = c(ci95.hi, hi_est)
-}
-
-# code a function which converts the vector of odds ratio confidence intervals 
-# to an interval of probabilities using the above-obtained CIs
-probinterval = function(model, vec){
-  low.output = sum(vec*ci95.lo)
-  low.prob = (low.output/(1+low.output))
-  hi.output = sum(vec*ci95.hi)
-  hi.prob = (hi.output/(1+hi.output))
-  cat(paste0("(",low.prob, ", ", hi.prob,")"))
-}
-
-# declare vector with values specified in question 2(a), including a 1
-# for the intercept
-x = c(1, 0, 17, 0, 4, 4)
-# pass the vector and predict.model to probinterval() to yield the desired 
-# interval
-probinterval(predict.model,x)
+# desiring so. 
+char = t(c(0, 17, 0, 4, 4))
+colnames(char) = c("sex", "age", "absences", "Medu", "Fedu")
+char = as.data.frame(char)
+add_ci(char, predict.model)
