@@ -1,6 +1,6 @@
 # Misc.-Projects
 
-A repository to house code for miscellaneous projects undertaken in the past with no grand or intrinsic utility. 
+A repository to house code for miscellaneous projects undertaken in the past with no grand aim or ongoing utility; more so a record than anything.
 
 ## Stats 111 HW \#5
 
