@@ -5,7 +5,7 @@ library(stringr) # for string manipulation within dataset
 library(ciTools) # for GLM confidence interval calculations
 #-------------------------------------------------------------------------------
 # load given data set into R
-student.mat = read.csv("/Users/bolekcolin13/Desktop/Coding Portfolio/student-mat.csv", sep = ";")
+student.mat = read.csv("pathname{student-mat.csv}", sep = ";")
 
 # Create bare GLM with only traveltime term and yield p-value to evaluate
 # efficiency of a minimal model
